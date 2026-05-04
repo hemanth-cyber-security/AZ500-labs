@@ -121,9 +121,5 @@ Used Run Command → PowerShell:
 ```powershell
 Install-WindowsFeature -name Web-Server -IncludeManagementTools
 
-
-## step 8:Access Web Server
-
-- Opened browser
-- Entered Web VM public IP
-- Successfully accessed the default IIS web page
+---
+##  Step 7
