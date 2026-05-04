@@ -16,7 +16,7 @@ The AZ-500 certification focuses on implementing and managing security in Azure,
 * Data & Application Security
 * Security Operations
 
-These labs are designed to provide **real-world, hands-on experience** aligned with Azure Security Engineer responsibilities. ([Coursera][1])
+These labs are designed to provide **real-world, hands-on experience** aligned with Azure Security Engineer responsibilities.
 
 ---
 
