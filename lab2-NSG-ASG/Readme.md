@@ -129,4 +129,6 @@ Install-WindowsFeature -name Web-Server -IncludeManagementTools
 - Entered Web VM public IP
 - Successfully accessed the default IIS web page
 
+  ![verification](images/webserver.png)
+
 
