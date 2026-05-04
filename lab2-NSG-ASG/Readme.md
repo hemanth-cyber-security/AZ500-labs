@@ -110,7 +110,9 @@ Associated them with ASGs:
 ##  Step 6: Verification – RDP
 
 - Connected to Management VM → ✅ Success  
-- Attempted RDP to Web VM → ❌ Blocked  
+- Attempted RDP to Web VM → ❌ Blocked
+
+  ![verification](images/rdp.png)!
 
 ---
 
@@ -120,4 +122,11 @@ Used Run Command → PowerShell:
 
 powershell
 Install-WindowsFeature -name Web-Server -IncludeManagementTools
+
+## step 8:Access Web Server
+
+- Opened browser
+- Entered Web VM public IP
+- Successfully accessed the default IIS web page
+
 
