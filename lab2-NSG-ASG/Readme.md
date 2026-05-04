@@ -88,7 +88,8 @@ Created two ASGs:
 
 📸 Screenshot:
 
-![NSG Rules](images/nsg-rules.png)
+![NSG Rules](images/nsg.rules.png)
+![NSG Rules](images/nsg.rules1.png)
 
 ---
 
@@ -106,16 +107,23 @@ Associated them with ASGs:
 
 ---
 
-## 🔍 Step 6: Verification – RDP
+##  Step 6: Verification – RDP
 
 - Connected to Management VM → ✅ Success  
 - Attempted RDP to Web VM → ❌ Blocked  
 
 ---
 
-## 🌐 Step 7: Install IIS on Web VM
+##  Step 7: Install IIS on Web VM
 
 Used Run Command → PowerShell:
 
 ```powershell
 Install-WindowsFeature -name Web-Server -IncludeManagementTools
+
+
+## step 8:Access Web Server
+
+- Opened browser
+- Entered Web VM public IP
+- Successfully accessed the default IIS web page
