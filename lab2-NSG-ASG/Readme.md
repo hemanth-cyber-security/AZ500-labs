@@ -118,8 +118,6 @@ Associated them with ASGs:
 
 Used Run Command → PowerShell:
 
-```powershell
+powershell
 Install-WindowsFeature -name Web-Server -IncludeManagementTools
 
----
-##  Step 7
