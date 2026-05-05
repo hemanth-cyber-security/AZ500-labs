@@ -37,7 +37,7 @@ These labs provide guided exercises aligned with real-world Azure security scena
 |--------|------------------------------------|---------------|
 | Lab 01 | Role-Based Access Control (RBAC)   | ✅ Completed   |
 | Lab 02 | Network Security (NSG & ASG)       | ✅ Completed   |
-| Lab 03 | Azure Firewall                     | ⏳ Pending     |
+| Lab 03 | Azure Firewall                     | ✅ Completed      |
 | Lab 04 | ACR & AKS Security                 | ⏳ Pending     |
 | Lab 05 | Azure SQL Security                 | ⏳ Pending     |
 
