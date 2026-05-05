@@ -88,7 +88,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 * Connected to Jump VM using public IP
 * From Jump VM → connected to Workload VM using private IP
 
-![Bing Connectivity](./images/bing-connectivity.png)
+![Bing Connectivity](./images/rdp_jump_to_workload.png)
 
 ### Why
 
@@ -105,7 +105,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 * Deployed Azure Firewall in `AzureFirewallSubnet`
 * Assigned Public IP
 
-![Firewall Public IP](./images/firewall-pip.png)
+![Firewall Public IP](./images/firewall_pip.png)
 
 ### Why
 
@@ -116,7 +116,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ## 🛣️ Step 5: Route Table (UDR)
 
-![Route Table](./images/firewall-route.png)
+![Route Table](./images/firewall_route.png)
 
 ### What we did
 
@@ -136,7 +136,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ### 🔹 Application Rule (Allow Bing)
 
-![Application Rule](./images/application-rule.png)
+![Application Rule](./images/application_rule.png)
 
 ### What we did
 
@@ -150,7 +150,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ### 🔹 Network Rule (Allow DNS)
 
-![Network Rule](./images/network-rule.png)
+![Network Rule](./images/network_rule.png)
 
 ### What we did
 
@@ -170,7 +170,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ### ✅ Allowed Traffic
 
-![Bing Allowed](./images/bing-connectivity.png)
+![Bing Allowed](./images/bing_connectivity.png)
 
 ✔️ Successfully accessed Bing
 
@@ -178,7 +178,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ### ❌ Blocked Traffic
 
-![Microsoft Blocked](./images/microsoft-deny.png)
+![Microsoft Blocked](./images/microsoft_deny_POC.png)
 
 ```
 Action: Deny. Reason: No rule matched.
