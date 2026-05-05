@@ -22,27 +22,27 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 📌 **Why this design?**
 
-* Segregates workloads into different subnets
-* Uses Jump VM as a secure access point
-* Centralizes traffic inspection through Firewall
+* Segregation of workload and management layers
+* Controlled access using Jump server
+* Central inspection using Azure Firewall
 
 ---
 
 ## 🌐 Resource Topology
 
-![Resource Visualizer](./images/AZ500lab03-RG.png)
+![Topology](./images/resource-topology.png)
 
-📌 Shows how all components are connected:
+📌 This shows how all Azure resources are interconnected:
 
-* VNet, Subnets
-* NSGs, Route Table
-* Firewall + Public IP
+* Virtual Machines
+* NICs
+* NSGs
+* Route Table
+* Firewall
 
 ---
 
 ## ⚙️ Step 1: Virtual Network Setup
-
-![VNet](./images/vnet.png)
 
 ### What we did
 
@@ -55,10 +55,10 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 * Jump-SN → `10.0.3.0/24`
 * AzureFirewallSubnet → `10.0.1.0/24`
 
-### Why we did this
+### Why
 
-* Separate workloads for security isolation
-* Dedicated subnet required for Azure Firewall
+* Isolation between application and management traffic
+* Azure Firewall requires a dedicated subnet
 
 ---
 
@@ -72,134 +72,113 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 ### 🔹 Srv-Jump (Public VM)
 
 * Public IP enabled
-* Used as secure entry point
+* Used as entry point
 
 ### Why
 
-* Prevent direct internet exposure of workload VM
-* Use Jump server as controlled access layer
+* Prevent direct exposure of internal workloads
+* Use Jump server as a controlled access layer
 
 ---
 
-## 🔐 Step 3: NSG Configuration
-
-### NSG Overview
-
-![NSG Overview](./images/nsg-overview.png)
-
-### NSG Rules
-
-![NSG Rules](./images/nsg-rules-1.png)
-![NSG Rules](./images/nsg-rules-2.png)
+## 🔗 Step 3: Connectivity Testing
 
 ### What we did
 
-* Allowed RDP (3389) only from our IP to Jump VM
-* Allowed internal VNet communication
-* Denied all other inbound traffic
+* Connected to Jump VM using public IP
+* From Jump VM → connected to Workload VM using private IP
+
+![Bing Connectivity](./images/bing-connectivity.png)
 
 ### Why
 
-* Follows **least privilege principle**
-* Protects VMs from unauthorized access
+* Ensure internal communication works before applying firewall rules
 
 ---
 
-## 🧩 Step 4: Application Security Groups (ASG)
+## 🔥 Step 4: Azure Firewall Deployment
 
-![ASG](./images/asg.png)
-
-### Why
-
-* Logical grouping of VMs
-* Easier rule management in NSG
-
----
-
-## 🔗 Step 5: Connectivity Testing
-
-### RDP to Jump Server
-
-![Jump RDP](./images/jump-rdp.png)
-
-### RDP to Workload VM
-
-![Workload RDP](./images/workload-rdp.png)
-
-### What we verified
-
-```
-Your PC → Jump VM → Workload VM
-```
-
-### Why
-
-* Ensures internal connectivity works before firewall enforcement
-
----
-
-## 🔥 Step 6: Azure Firewall Deployment
+![Firewall Overview](./images/firewall.png)
 
 ### What we did
 
-* Deployed Firewall in `AzureFirewallSubnet`
+* Deployed Azure Firewall in `AzureFirewallSubnet`
 * Assigned Public IP
 
+![Firewall Public IP](./images/firewall-pip.png)
+
 ### Why
 
-* Central inspection point for all outbound traffic
+* Firewall acts as central inspection point
+* Public IP allows outbound internet connectivity via firewall
 
 ---
 
-## 🛣️ Step 7: Route Table (UDR)
+## 🛣️ Step 5: Route Table (UDR)
 
-![Route Table](./images/route-table.png)
+![Route Table](./images/firewall-route.png)
 
 ### What we did
 
 * Created route: `0.0.0.0/0`
-* Next hop: Firewall Private IP
+* Next hop type: Virtual Appliance
+* Next hop IP: `10.0.1.4` (Firewall private IP)
 * Associated with Workload-SN
 
 ### Why
 
 * Forces all outbound traffic through firewall
+* Prevents direct internet access
 
 ---
 
-## 🌐 Step 8: Firewall Rules
+## 🌐 Step 6: Firewall Rules
 
-### Application Rule
+### 🔹 Application Rule (Allow Bing)
 
-* Allow: `www.bing.com`
+![Application Rule](./images/application-rule.png)
 
-### Network Rule
+### What we did
 
-* Allow DNS:
+* Allowed outbound HTTP/HTTPS to `www.bing.com`
+
+### Why
+
+* Demonstrates FQDN-based filtering
+
+---
+
+### 🔹 Network Rule (Allow DNS)
+
+![Network Rule](./images/network-rule.png)
+
+### What we did
+
+* Allowed DNS traffic to:
 
   * `209.244.0.3`
   * `209.244.0.4`
 
 ### Why
 
-* Application rule filters web traffic
-* DNS rule is required for domain resolution
+* Required for domain name resolution
+* Without DNS → application rules won’t work
 
 ---
 
-## 🧪 Step 9: Validation
+## 🧪 Step 7: Validation
 
 ### ✅ Allowed Traffic
 
-![Bing Allowed](./images/bing-allowed.png)
+![Bing Allowed](./images/bing-connectivity.png)
 
-✔️ Bing accessible
+✔️ Successfully accessed Bing
 
 ---
 
 ### ❌ Blocked Traffic
 
-![Blocked](./images/microsoft-blocked.png)
+![Microsoft Blocked](./images/microsoft-deny.png)
 
 ```
 Action: Deny. Reason: No rule matched.
@@ -207,45 +186,39 @@ Action: Deny. Reason: No rule matched.
 
 ### Why
 
-* Firewall follows **default deny model**
-
----
-
-## 🌐 Additional Test
-
-![Web Server](./images/webserver.png)
+* Firewall follows default deny principle
 
 ---
 
 ## 🔐 Key Learnings
 
-* Forced tunneling using UDR
-* Default deny firewall behavior
-* Importance of DNS in firewall rules
-* Secure jump host architecture
+* UDR forces traffic through firewall
+* Azure Firewall follows **default deny model**
+* DNS is mandatory for FQDN filtering
+* Jump server improves security posture
 
 ---
 
 ## ⚠️ Common Mistakes
 
-* Using firewall public IP instead of private IP
-* Not associating route table
+* Using firewall public IP instead of private IP in route
+* Forgetting route table association
 * Missing DNS rule
 
 ---
 
-## 🚀 Improvements
+## 🚀 Real-World Improvements
 
-* Enable logging & monitoring
-* Integrate with Sentinel
-* Use Firewall Policy
+* Enable diagnostic logs
+* Integrate with Microsoft Sentinel
+* Use Firewall Policy instead of classic rules
 
 ---
 
 ## 🧹 Cleanup
 
 ```powershell
-Remove-AzResourceGroup -Name "AZ500LAB08" -Force
+Remove-AzResourceGroup -Name "AZ500lab03-RG" -Force
 ```
 
 ---
