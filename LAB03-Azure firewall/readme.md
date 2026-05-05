@@ -105,7 +105,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 * Deployed Azure Firewall in `AzureFirewallSubnet`
 * Assigned Public IP
 
-![Firewall Public IP](./images/firewal_pip.png)
+![Firewall Public IP](./images/firewal_PIP.png)
 
 ### Why
 
