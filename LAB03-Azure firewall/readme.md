@@ -149,7 +149,7 @@ This lab demonstrates how to deploy and configure Azure Firewall to control outb
 ```text
 Action: Deny. Reason: No rule matched.
 ```
-
+ 
 ---
 
 ## 🔐 Key Learnings
