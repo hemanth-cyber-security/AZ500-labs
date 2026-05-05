@@ -2,41 +2,34 @@
 
 ---
 
-## 📌 Lab Scenario
+## 📌 Overview
 
-You have been asked to install and configure **Azure Firewall** to control both **inbound and outbound traffic** as part of a secure network architecture.
+This lab demonstrates how to deploy and configure Azure Firewall to control outbound traffic using:
 
-### 🎯 Objectives
-
-* Create a secure virtual network with:
-
-  * Workload subnet
-  * Jump host subnet
-* Deploy virtual machines in each subnet
-* Force all outbound traffic through the firewall using a custom route
-* Allow only specific outbound access (`www.bing.com`)
-* Allow DNS traffic for domain resolution
+* Application Rules (FQDN filtering)
+* Network Rules (DNS)
+* User Defined Routes (UDR)
 
 ---
 
 ## 🏗️ Architecture
 
-![Architecture](./screenshots/architecture.png)
+[🔍 View Full Image](./images/architecture.png)
+
+![Architecture](./images/architecture.png)
 
 ---
 
 ## ⚙️ Step 1: Create Virtual Network
 
-Create a Virtual Network:
-
-* **Name**: `Lab03-VNet`
-* **Address Space**: `10.0.0.0/16`
+* **Name**: Lab03-VNet
+* **Address Space**: 10.0.0.0/16
 
 ### Subnets:
 
-1. `Workload-SN` → `10.0.2.0/24`
-2. `Jump-SN` → `10.0.3.0/24`
-3. `AzureFirewallSubnet` → `10.0.1.0/24` ⚠️ (Mandatory name)
+* Workload-SN → 10.0.2.0/24
+* Jump-SN → 10.0.3.0/24
+* AzureFirewallSubnet → 10.0.1.0/24 ⚠️ (Required)
 
 ---
 
@@ -44,224 +37,136 @@ Create a Virtual Network:
 
 ### 🔹 Srv-Work (Private VM)
 
-* Name: `Srv-Work`
-* Subnet: `Workload-SN`
+* Subnet: Workload-SN
 * Public IP: ❌ No
-* NSG:
-
-  * No inbound access from internet
-  * Only internal access allowed
+* NSG: No inbound from internet
 
 ---
 
 ### 🔹 Srv-Jump (Public VM)
 
-* Name: `Srv-Jump`
-* Subnet: `Jump-SN`
+* Subnet: Jump-SN
 * Public IP: ✅ Yes
 
 #### NSG Rule:
 
-* Allow RDP (3389) **only from your IP**
+* Allow RDP (3389) only from your IP
 
 ---
 
-## 🔗 Step 3: Test Connectivity
+## 🔗 Step 3: Connectivity Test
 
-[🔍 View Screenshot](./screenshots/connectivity.png)
+[🔍 View Screenshot](./images/connectivity.png)
 
-![Connectivity](./screenshots/connectivity.png)
+![Connectivity](./images/connectivity.png)
 
-### Steps:
+### Test:
 
-1. RDP from your laptop → **Srv-Jump (Public IP)**
-2. From Srv-Jump → RDP to **Srv-Work (Private IP)**
-
-📌 This validates:
-
-* Internal communication works
-* Jump host architecture is functioning
+* RDP → Srv-Jump (Public IP)
+* RDP → Srv-Work (Private IP from Jump VM)
 
 ---
 
 ## 🔥 Step 4: Deploy Azure Firewall
 
-[🔍 View Screenshot](./screenshots/firewall-overview.png)
+[🔍 View Screenshot](./images/firewall-overview.png)
 
-![Firewall](./screenshots/firewall-overview.png)
+![Firewall](./images/firewall-overview.png)
+
+* Firewall Name: Test-FW01
+* SKU: Standard
+* Subnet: AzureFirewallSubnet
+* Note the **Private IP**
+
+---
+
+## 🛣️ Step 5: Route Table (UDR)
+
+[🔍 View Screenshot](./images/route-table.png)
+
+![Route Table](./images/route-table.png)
 
 ### Configuration:
 
-* Name: `Test-FW01`
-* SKU: Standard
-* VNet: `Lab03-VNet`
-* Subnet: `AzureFirewallSubnet`
-* Public IP: `TEST-FW-PIP`
-* Firewall Management: **Classic rules**
-
-📌 After deployment:
-
-* Note the **Private IP of Firewall** (used in routing)
+* Route: 0.0.0.0/0
+* Next Hop: Virtual Appliance
+* Next Hop IP: Firewall Private IP
+* Associate with: Workload-SN
 
 ---
 
-## 🛣️ Step 5: Create Route Table (Core Concept)
-
-[🔍 View Screenshot](./screenshots/route-table.png)
-
-![Route Table](./screenshots/route-table.png)
-
-### Steps:
-
-1. Create Route Table → `Firewall-route`
-2. Associate with:
-
-   * Subnet: `Workload-SN`
-
-### Add Route:
-
-* Destination: `0.0.0.0/0`
-* Next Hop Type: `Virtual Appliance`
-* Next Hop IP: **Firewall Private IP**
-
----
-
-### 🧠 What this does
-
-```id="flow1"
-Srv-Work → Azure Firewall → Internet
-```
-
-📌 Forces all outbound traffic through firewall
-
----
-
-## 🔐 Step 6: Configure Firewall Rules
-
----
+## 🔐 Step 6: Firewall Rules
 
 ### 🔹 Application Rule (Allow Bing)
 
-[🔍 View Screenshot](./screenshots/app-rule.png)
+[🔍 View Screenshot](./images/app-rule.png)
 
-![App Rule](./screenshots/app-rule.png)
+![Application Rule](./images/app-rule.png)
 
-* Source: `10.0.2.0/24`
-* Protocols: HTTP, HTTPS
-* Target: `www.bing.com`
+* Source: 10.0.2.0/24
+* Protocol: HTTP/HTTPS
+* Target: [www.bing.com](http://www.bing.com)
 
 ---
 
 ### 🔹 Network Rule (DNS)
 
-[🔍 View Screenshot](./screenshots/network-rule.png)
+[🔍 View Screenshot](./images/network-rule.png)
 
-![Network Rule](./screenshots/network-rule.png)
+![Network Rule](./images/network-rule.png)
 
-* Source: `10.0.2.0/24`
-* Destination:
-
-  * `209.244.0.3`
-  * `209.244.0.4`
-* Port: `53`
+* Source: 10.0.2.0/24
+* Destination: 209.244.0.3, 209.244.0.4
+* Port: 53
 
 ---
 
-## 🌐 Step 7: Configure DNS on Work VM
+## 🌐 Step 7: Configure DNS
 
-Set DNS manually on `Srv-Work`:
+* Set DNS on Srv-Work:
 
-* `209.244.0.3`
-* `209.244.0.4`
-
-📌 Required for domain name resolution
+  * 209.244.0.3
+  * 209.244.0.4
 
 ---
 
-## 🧪 Step 8: Test Firewall
+## 🧪 Step 8: Test Results
+
+### ✅ Allowed (Bing)
+
+[🔍 View Screenshot](./images/bing-allowed.png)
+
+![Bing Allowed](./images/bing-allowed.png)
 
 ---
 
-### ✅ Allowed Traffic (Bing)
+### ❌ Blocked (Microsoft)
 
-[🔍 View Screenshot](./screenshots/bing-allowed.png)
+[🔍 View Screenshot](./images/microsoft-blocked.png)
 
-![Bing](./screenshots/bing-allowed.png)
+![Blocked](./images/microsoft-blocked.png)
 
-* Successfully accessed:
-
-```
-https://www.bing.com
-```
-
----
-
-### ❌ Blocked Traffic (Microsoft)
-
-[🔍 View Screenshot](./screenshots/microsoft-blocked.png)
-
-![Blocked](./screenshots/microsoft-blocked.png)
-
-* Access denied:
-
-```
-http://www.microsoft.com
-```
-
-* Error:
-
-```
+```text
 Action: Deny. Reason: No rule matched.
 ```
 
 ---
 
-## 🔐 Key Security Concepts Learned
+## 🔐 Key Learnings
 
-* ✔️ Forced tunneling using UDR
-* ✔️ Default deny model
-* ✔️ FQDN-based filtering
-* ✔️ DNS dependency
-* ✔️ Network segmentation
-* ✔️ Jump host architecture
-
----
-
-## ⚠️ Common Mistakes Avoided
-
-* ❌ Using wrong subnet name for firewall
-* ❌ Not associating route table
-* ❌ Using firewall public IP instead of private
-* ❌ Forgetting DNS rule
-* ❌ Opening RDP to entire internet
-
----
-
-## 🚀 Improvements (Real-World)
-
-* Enable Firewall logging
-* Integrate with Microsoft Sentinel
-* Use Firewall Policy instead of classic rules
-* Implement JIT VM access
-* Restrict lateral movement using NSGs
+* Forced tunneling using UDR
+* Default deny model
+* FQDN filtering
+* DNS dependency
+* Network segmentation
 
 ---
 
 ## 🧹 Cleanup
 
-```powershell id="cleanup1"
+```powershell
 Remove-AzResourceGroup -Name "AZ500LAB08" -Force
 ```
-
----
-
-## 📚 Conclusion
-
-This lab demonstrates how Azure Firewall enforces **strict outbound control**, ensuring only trusted traffic is allowed and reducing the risk of:
-
-* Data exfiltration
-* Unauthorized access
-* Malware communication
 
 ---
 
