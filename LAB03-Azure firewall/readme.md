@@ -18,7 +18,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ## 🏗️ Architecture
 
-![Architecture](./images/architecture.png)
+![Architecture](./images/architecture1.png)
 
 📌 **Why this design?**
 
@@ -30,7 +30,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ## 🌐 Resource Topology
 
-![Topology](./images/resource-topology.png)
+![Topology](./images/AZ500lab03-RG.png)
 
 📌 This shows how all Azure resources are interconnected:
 
