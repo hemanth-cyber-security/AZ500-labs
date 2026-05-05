@@ -2,163 +2,243 @@
 
 ---
 
-## 📌 Overview
+## 📌 Lab Scenario
 
-This lab demonstrates how to deploy and configure Azure Firewall to control outbound traffic using:
+This lab demonstrates how to deploy and configure **Azure Firewall** to control outbound traffic and enforce security policies.
 
-* Application Rules (FQDN filtering)
-* Network Rules (DNS)
-* User Defined Routes (UDR)
+### 🎯 Objectives
+
+* Create secure network architecture using subnets
+* Deploy Jump server and Workload server
+* Force traffic through firewall using UDR
+* Allow only specific outbound access (Bing)
+* Block all other internet traffic
 
 ---
 
 ## 🏗️ Architecture
 
-[🔍 View Full Image](./images/architecture.png)
-
 ![Architecture](./images/architecture.png)
+
+📌 **Why this design?**
+
+* Segregates workloads into different subnets
+* Uses Jump VM as a secure access point
+* Centralizes traffic inspection through Firewall
 
 ---
 
-## ⚙️ Step 1: Create Virtual Network
+## 🌐 Resource Topology
 
-* **Name**: Lab03-VNet
-* **Address Space**: 10.0.0.0/16
+![Resource Visualizer](./images/resource-visualizer.png)
+
+📌 Shows how all components are connected:
+
+* VNet, Subnets
+* NSGs, Route Table
+* Firewall + Public IP
+
+---
+
+## ⚙️ Step 1: Virtual Network Setup
+
+![VNet](./images/vnet.png)
+
+### What we did
+
+* Created VNet: `Lab03-VNet`
+* Address space: `10.0.0.0/16`
 
 ### Subnets:
 
-* Workload-SN → 10.0.2.0/24
-* Jump-SN → 10.0.3.0/24
-* AzureFirewallSubnet → 10.0.1.0/24 ⚠️ (Required)
+* Workload-SN → `10.0.2.0/24`
+* Jump-SN → `10.0.3.0/24`
+* AzureFirewallSubnet → `10.0.1.0/24`
+
+### Why we did this
+
+* Separate workloads for security isolation
+* Dedicated subnet required for Azure Firewall
 
 ---
 
-## 🖥️ Step 2: Deploy Virtual Machines
+## 🖥️ Step 2: Virtual Machines Deployment
 
 ### 🔹 Srv-Work (Private VM)
 
-* Subnet: Workload-SN
-* Public IP: ❌ No
-* NSG: No inbound from internet
-
----
+* No Public IP
+* Internal access only
 
 ### 🔹 Srv-Jump (Public VM)
 
-* Subnet: Jump-SN
-* Public IP: ✅ Yes
+* Public IP enabled
+* Used as secure entry point
 
-#### NSG Rule:
+### Why
 
-* Allow RDP (3389) only from your IP
-
----
-
-## 🔗 Step 3: Connectivity Test
-
-[🔍 View Screenshot](./images/connectivity.png)
-
-![Connectivity](./images/connectivity.png)
-
-### Test:
-
-* RDP → Srv-Jump (Public IP)
-* RDP → Srv-Work (Private IP from Jump VM)
+* Prevent direct internet exposure of workload VM
+* Use Jump server as controlled access layer
 
 ---
 
-## 🔥 Step 4: Deploy Azure Firewall
+## 🔐 Step 3: NSG Configuration
 
-[🔍 View Screenshot](./images/firewall-overview.png)
+### NSG Overview
 
-![Firewall](./images/firewall-overview.png)
+![NSG Overview](./images/nsg-overview.png)
 
-* Firewall Name: Test-FW01
-* SKU: Standard
-* Subnet: AzureFirewallSubnet
-* Note the **Private IP**
+### NSG Rules
+
+![NSG Rules](./images/nsg-rules-1.png)
+![NSG Rules](./images/nsg-rules-2.png)
+
+### What we did
+
+* Allowed RDP (3389) only from our IP to Jump VM
+* Allowed internal VNet communication
+* Denied all other inbound traffic
+
+### Why
+
+* Follows **least privilege principle**
+* Protects VMs from unauthorized access
 
 ---
 
-## 🛣️ Step 5: Route Table (UDR)
+## 🧩 Step 4: Application Security Groups (ASG)
 
-[🔍 View Screenshot](./images/route-table.png)
+![ASG](./images/asg.png)
+
+### Why
+
+* Logical grouping of VMs
+* Easier rule management in NSG
+
+---
+
+## 🔗 Step 5: Connectivity Testing
+
+### RDP to Jump Server
+
+![Jump RDP](./images/jump-rdp.png)
+
+### RDP to Workload VM
+
+![Workload RDP](./images/workload-rdp.png)
+
+### What we verified
+
+```
+Your PC → Jump VM → Workload VM
+```
+
+### Why
+
+* Ensures internal connectivity works before firewall enforcement
+
+---
+
+## 🔥 Step 6: Azure Firewall Deployment
+
+### What we did
+
+* Deployed Firewall in `AzureFirewallSubnet`
+* Assigned Public IP
+
+### Why
+
+* Central inspection point for all outbound traffic
+
+---
+
+## 🛣️ Step 7: Route Table (UDR)
 
 ![Route Table](./images/route-table.png)
 
-### Configuration:
+### What we did
 
-* Route: 0.0.0.0/0
-* Next Hop: Virtual Appliance
-* Next Hop IP: Firewall Private IP
-* Associate with: Workload-SN
+* Created route: `0.0.0.0/0`
+* Next hop: Firewall Private IP
+* Associated with Workload-SN
 
----
+### Why
 
-## 🔐 Step 6: Firewall Rules
-
-### 🔹 Application Rule (Allow Bing)
-
-[🔍 View Screenshot](./images/app-rule.png)
-
-![Application Rule](./images/app-rule.png)
-
-* Source: 10.0.2.0/24
-* Protocol: HTTP/HTTPS
-* Target: [www.bing.com](http://www.bing.com)
+* Forces all outbound traffic through firewall
 
 ---
 
-### 🔹 Network Rule (DNS)
+## 🌐 Step 8: Firewall Rules
 
-[🔍 View Screenshot](./images/network-rule.png)
+### Application Rule
 
-![Network Rule](./images/network-rule.png)
+* Allow: `www.bing.com`
 
-* Source: 10.0.2.0/24
-* Destination: 209.244.0.3, 209.244.0.4
-* Port: 53
+### Network Rule
+
+* Allow DNS:
+
+  * `209.244.0.3`
+  * `209.244.0.4`
+
+### Why
+
+* Application rule filters web traffic
+* DNS rule is required for domain resolution
 
 ---
 
-## 🌐 Step 7: Configure DNS
+## 🧪 Step 9: Validation
 
-* Set DNS on Srv-Work:
-
-  * 209.244.0.3
-  * 209.244.0.4
-
----
-
-## 🧪 Step 8: Test Results
-
-### ✅ Allowed (Bing)
-
-[🔍 View Screenshot](./images/bing-allowed.png)
+### ✅ Allowed Traffic
 
 ![Bing Allowed](./images/bing-allowed.png)
 
+✔️ Bing accessible
+
 ---
 
-### ❌ Blocked (Microsoft)
-
-[🔍 View Screenshot](./images/microsoft-blocked.png)
+### ❌ Blocked Traffic
 
 ![Blocked](./images/microsoft-blocked.png)
 
-```text
+```
 Action: Deny. Reason: No rule matched.
 ```
- 
+
+### Why
+
+* Firewall follows **default deny model**
+
+---
+
+## 🌐 Additional Test
+
+![Web Server](./images/webserver.png)
+
 ---
 
 ## 🔐 Key Learnings
 
 * Forced tunneling using UDR
-* Default deny model
-* FQDN filtering
-* DNS dependency
-* Network segmentation
+* Default deny firewall behavior
+* Importance of DNS in firewall rules
+* Secure jump host architecture
+
+---
+
+## ⚠️ Common Mistakes
+
+* Using firewall public IP instead of private IP
+* Not associating route table
+* Missing DNS rule
+
+---
+
+## 🚀 Improvements
+
+* Enable logging & monitoring
+* Integrate with Sentinel
+* Use Firewall Policy
 
 ---
 
