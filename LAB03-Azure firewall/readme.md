@@ -30,7 +30,7 @@ This lab demonstrates how to deploy and configure **Azure Firewall** to control 
 
 ## 🌐 Resource Topology
 
-![Resource Visualizer](./images/resource-visualizer.png)
+![Resource Visualizer](./images/AZ500lab03-RG.png)
 
 📌 Shows how all components are connected:
 
